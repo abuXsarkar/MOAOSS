@@ -71,9 +71,14 @@ below, deliberately deferred so v0.1 is finishable.
 - **v0.1** — Offline image verifier (engine + CLI), honest verdict model. ✅ done
 - **v0.2** — WASM build + a zero-backend "drop a file, verify locally" web page. ✅ done
   (see [`web/`](web/README.md))
+- **AI-generated detection** — flag the IPTC `digitalSourceType` marker (Nano Banana,
+  GPT image, Seedance, etc.) in CLI and web. ✅ done
 - **v0.3** — Signing at point of capture.
 - **v0.4** — User-controlled trust lists & revocation, no central authority.
 - **v0.5** — Video/audio; decentralized provenance anchoring.
+- **Durable credentials** — recover provenance after metadata is stripped, via a
+  perceptual-fingerprint registry + robust watermark. 🧪 prototype in
+  [`durable/`](durable/README.md).
 
 ## Stack
 
