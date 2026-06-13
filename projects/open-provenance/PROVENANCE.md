@@ -17,6 +17,5 @@ added.
 | Dependency | Purpose | License | Pinned version |
 | --- | --- | --- | --- |
 | [`c2pa-node`](https://www.npmjs.com/package/c2pa-node) | C2PA manifest parsing & validation (CLI verifier) | Apache-2.0 / MIT (CAI) | 0.5.26 |
-
-Planned for v0.2: [`c2pa`](https://www.npmjs.com/package/c2pa) (WASM JS SDK) for in-browser
-offline verification — confirm and pin its version/license when added.
+| [`c2pa`](https://www.npmjs.com/package/c2pa) | WASM C2PA SDK for in-browser offline verification (v0.2 web) | Apache-2.0 / MIT (CAI) | 0.30.17 |
+| [`vite`](https://www.npmjs.com/package/vite) | Build tooling for the web verifier (dev dependency) | MIT | ^5.4.0 |

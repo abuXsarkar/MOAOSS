@@ -68,8 +68,9 @@ below, deliberately deferred so v0.1 is finishable.
 
 ## Roadmap
 
-- **v0.1** — Offline image verifier (engine + CLI), honest verdict model. *(current)*
-- **v0.2** — WASM build + a zero-backend "drop a file, verify locally" web page.
+- **v0.1** — Offline image verifier (engine + CLI), honest verdict model. ✅ done
+- **v0.2** — WASM build + a zero-backend "drop a file, verify locally" web page. ✅ done
+  (see [`web/`](web/README.md))
 - **v0.3** — Signing at point of capture.
 - **v0.4** — User-controlled trust lists & revocation, no central authority.
 - **v0.5** — Video/audio; decentralized provenance anchoring.
@@ -99,6 +100,16 @@ npm test
 ```
 
 Exit codes: `0` verified, `3` no credentials, `4` invalid, `2` error.
+
+### Or verify in the browser (v0.2, fully offline)
+
+```bash
+cd projects/open-provenance/web
+npm install && npm run dev      # then open the printed URL and drop in an image
+```
+
+A zero-backend page that verifies locally with WebAssembly — nothing is uploaded. See
+[`web/README.md`](web/README.md).
 
 ### Generating a signed sample for testing
 
