@@ -55,11 +55,14 @@ export function classify(manifestStore) {
   const m = manifestStore.active_manifest ||
     Object.values(manifestStore.manifests || {})[0] || {};
 
+  const ai = detectAi(m);
   const details = {
     signer: m.signature_info?.issuer ?? null,
     tool: m.claim_generator ?? null,
     signedAt: m.signature_info?.time ?? m.signature_info?.timeObject?.toISOString?.() ?? null,
     edits: extractEdits(m),
+    aiGenerated: ai.aiGenerated,
+    aiSourceType: ai.aiSourceType,
     failures: failures.map(pick),
     trustWarnings: trustWarnings.map(pick),
   };
@@ -86,10 +89,36 @@ function extractEdits(manifest) {
   return out;
 }
 
+// Detect a declared AI-generation marker. C2PA carries the IPTC `digitalSourceType` URI
+// on actions; a value ending in `trainedAlgorithmicMedia` (or the composite variant)
+// means the content was made or partly made by a generative model. This is what lets us
+// flag output from Nano Banana, GPT image models, Seedance, etc. — *when* their Content
+// Credentials are still intact.
+function detectAi(manifest) {
+  const types = [];
+  for (const a of manifest.assertions || []) {
+    if (a.label === 'c2pa.actions' || a.label === 'c2pa.actions.v2') {
+      for (const act of a.data?.actions || []) {
+        if (act.digitalSourceType) types.push(String(act.digitalSourceType));
+      }
+      if (a.data?.digitalSourceType) types.push(String(a.data.digitalSourceType));
+    }
+  }
+  const match = types.find((t) => /trainedAlgorithmicMedia/i.test(t)) || null;
+  return {
+    aiGenerated: Boolean(match),
+    // Keep just the short IPTC code (e.g. "trainedAlgorithmicMedia"), not the full URI.
+    aiSourceType: match ? match.split('/').pop() : null,
+  };
+}
+
 function pick(s) {
   return s.explanation ? { code: s.code, explanation: s.explanation } : { code: s.code };
 }
 
 function base(verdict) {
-  return { verdict, signer: null, tool: null, signedAt: null, edits: [], failures: [], trustWarnings: [] };
+  return {
+    verdict, signer: null, tool: null, signedAt: null, edits: [],
+    aiGenerated: false, aiSourceType: null, failures: [], trustWarnings: [],
+  };
 }

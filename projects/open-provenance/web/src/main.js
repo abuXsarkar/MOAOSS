@@ -45,6 +45,9 @@ function render(name, r) {
   if (r.verdict === Verdict.VERIFIED) {
     blocks.push(row('✅', 'Verified', 'verdict-ok'));
     blocks.push(`<p class="lead">The provenance chain is intact — signatures and content hashes check out.</p>`);
+    if (r.aiGenerated) {
+      blocks.push(`<p class="ai-badge">🤖 AI-generated — the manifest declares this is <strong>${escapeHtml(r.aiSourceType)}</strong>${r.tool ? ` (${escapeHtml(r.tool)})` : ''}.</p>`);
+    }
     blocks.push(defList([
       r.signer && ['Signed by', r.signer],
       r.tool && ['Produced by', r.tool],

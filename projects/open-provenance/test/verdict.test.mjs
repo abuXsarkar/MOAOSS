@@ -29,6 +29,39 @@ test('clean active manifest -> VERIFIED with signer/tool/edits', () => {
   assert.equal(r.trustWarnings.length, 0);
 });
 
+test('AI-generated marker on an action is detected', () => {
+  const r = classify({
+    active_manifest: {
+      claim_generator: 'NanoBananaPro/1.0',
+      signature_info: { issuer: 'Google' },
+      assertions: [{
+        label: 'c2pa.actions',
+        data: { actions: [{
+          action: 'c2pa.created',
+          digitalSourceType: 'http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia',
+        }] },
+      }],
+    },
+    manifests: { m1: {} },
+    validation_status: [],
+  });
+  assert.equal(r.verdict, Verdict.VERIFIED);
+  assert.equal(r.aiGenerated, true);
+  assert.equal(r.aiSourceType, 'trainedAlgorithmicMedia');
+});
+
+test('no AI marker -> aiGenerated false', () => {
+  const r = classify({
+    active_manifest: {
+      assertions: [{ label: 'c2pa.actions', data: { actions: [{ action: 'c2pa.created', digitalSourceType: 'http://cv.iptc.org/newscodes/digitalsourcetype/digitalCapture' }] } }],
+    },
+    manifests: { m1: {} },
+    validation_status: [],
+  });
+  assert.equal(r.aiGenerated, false);
+  assert.equal(r.aiSourceType, null);
+});
+
 test('hash mismatch -> INVALID', () => {
   const r = classify({
     active_manifest: { signature_info: { issuer: 'X' } },

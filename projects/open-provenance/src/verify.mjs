@@ -65,6 +65,7 @@ function render(file, r) {
   if (r.verdict === Verdict.VERIFIED) {
     L.push(`✅ VERIFIED  ${file}`);
     L.push('   The provenance chain is intact: signatures and content hashes check out.');
+    if (r.aiGenerated) L.push(`   🤖 AI-GENERATED — the manifest declares this is ${r.aiSourceType}.`);
     if (r.signer) L.push(`   Signed by:    ${r.signer}`);
     if (r.tool) L.push(`   Produced by:  ${r.tool}`);
     if (r.signedAt) L.push(`   Signed at:    ${r.signedAt}`);
