@@ -6,14 +6,19 @@
 
 ## What this project is
 
-MOAOSS organizes and develops open-source replacements for widely-used proprietary
-software. The goal is breadth (cover the "most useful" tools across domains) and
-**legal soundness** (every line we publish, we have the right to publish).
+MOAOSS develops two kinds of software the world needs:
 
-We follow the same model used by mature, legally-tested projects such as **Wine**,
-**ReactOS**, **GIMP**, **LibreOffice**, **Inkscape**, and **Blender**: build from public
-specifications, documented behavior, and observable functionality — never from a
-competitor's source code.
+1. **Original public-good infrastructure** — profound projects that should exist as
+   neutral commons (e.g. [`projects/open-provenance`](projects/open-provenance), an
+   offline-first digital-authenticity verifier).
+2. **Clean-room open alternatives** to widely-used proprietary software — built from
+   public specifications and observable behavior, **never** from a competitor's source
+   code, the same way **Wine**, **ReactOS**, **GIMP**, and **LibreOffice** were built.
+
+The constant across both is **legal soundness**: every line we publish, we have the right
+to publish. Licensing follows [`governance/LICENSING.md`](governance/LICENSING.md), which
+defines an open-source track and an honestly-labeled source-available / non-commercial
+track.
 
 ## What this project is **not**
 
@@ -56,4 +61,5 @@ purpose — they are what make the rest of the project defensible.
 ## License
 
 Project scaffolding and documentation are licensed under [Apache-2.0](LICENSE). Each
-reimplementation under `projects/` declares its own OSI-approved license.
+project under `projects/` declares its own license and track per
+[`governance/LICENSING.md`](governance/LICENSING.md).
