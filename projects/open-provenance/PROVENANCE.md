@@ -16,4 +16,7 @@ added.
 
 | Dependency | Purpose | License | Pinned version |
 | --- | --- | --- | --- |
-| _(to be added: upstream `c2pa` library, once version/license confirmed and pinned)_ | C2PA manifest parsing & validation | _TBD_ | _TBD_ |
+| [`c2pa-node`](https://www.npmjs.com/package/c2pa-node) | C2PA manifest parsing & validation (CLI verifier) | Apache-2.0 / MIT (CAI) | 0.5.26 |
+
+Planned for v0.2: [`c2pa`](https://www.npmjs.com/package/c2pa) (WASM JS SDK) for in-browser
+offline verification — confirm and pin its version/license when added.

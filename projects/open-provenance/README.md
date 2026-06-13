@@ -74,12 +74,48 @@ below, deliberately deferred so v0.1 is finishable.
 - **v0.4** — User-controlled trust lists & revocation, no central authority.
 - **v0.5** — Video/audio; decentralized provenance anchoring.
 
-## Proposed stack
+## Stack
 
-**Rust** core (the reference `c2pa` implementation is Rust; clean path to WASM and to a
-single static CLI binary), with a thin CLI first and a WASM target in v0.2. Open to
-revisiting — if a different stack better serves "runs on the oldest possible devices,"
-say so before we commit.
+**Node.js + the Content Authenticity Initiative's C2PA libraries.** v0.1 uses
+[`c2pa-node`](https://www.npmjs.com/package/c2pa-node) for the CLI verifier; v0.2 will
+use the WASM-based [`c2pa`](https://www.npmjs.com/package/c2pa) JS SDK, which is built
+precisely for client-side, offline, in-browser verification — exactly our reach goal.
+(The Rust reference crate would also work, but `crates.io` is unreachable from the
+current build environment; the JS/WASM path is both buildable here and a better fit for
+"runs in any browser on old devices.")
+
+## Try it
+
+```bash
+cd projects/open-provenance
+npm install
+
+# Verify a file (fully offline, no network calls):
+node src/verify.mjs path/to/image.jpg          # human-readable verdict
+node src/verify.mjs path/to/image.jpg --json    # machine-readable
+
+# Run the unit tests (no native binding needed):
+npm test
+```
+
+Exit codes: `0` verified, `3` no credentials, `4` invalid, `2` error.
+
+### Generating a signed sample for testing
+
+`tools/make-sample.mjs` signs an image with the bundled C2PA **test** certificate so you
+can exercise the VERIFIED path:
+
+```bash
+node tools/make-sample.mjs test/fixtures/plain.jpg test/fixtures/signed.jpg
+node src/verify.mjs test/fixtures/signed.jpg   # -> VERIFIED, with an "untrusted signer" warning
+```
+
+> **Signing needs network; verifying never does.** The test signer requests an RFC-3161
+> timestamp from a timestamp authority, so `make-sample` must run where outbound HTTP to
+> that host is allowed (a normal dev box, or the project VM). Point `TSA_URL` at your own
+> authority if needed. This requirement is *signing*-only — `verify.mjs` makes no network
+> calls. The test certificate is intentionally not on any trust list, which is why
+> verifying its output correctly reports VERIFIED **with a trust warning**.
 
 ## License
 

@@ -1,0 +1,17 @@
+{
+  "name": "open-provenance",
+  "version": "0.1.0",
+  "description": "Offline-first, gatekeeper-free digital-authenticity verifier built on the open C2PA standard.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "bin": {
+    "open-provenance": "src/verify.mjs"
+  },
+  "scripts": {
+    "verify": "node src/verify.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "c2pa-node": "0.5.26"
+  }
+}
