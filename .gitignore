@@ -1,0 +1,20 @@
+# Never commit the originals or anything derived directly from them.
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# Decompiler / disassembler output must never enter the repo.
+*.decompiled
+*.disasm
+
+# Local scratch and build artifacts
+/tmp/
+/scratch/
+node_modules/
+__pycache__/
+*.pyc
+.env
+.env.*
