@@ -22,6 +22,13 @@
       .card:not(.shown):not(.busy) { display:none; }
       .card.busy, .card.shown { border:1px solid var(--line); background:#fff; border-radius:14px; padding:18px; }
       .filename { font-size:.8rem; color:var(--muted); margin:0 0 10px; word-break:break-all; }
+      .chips { display:flex; flex-wrap:wrap; gap:6px; margin:0 0 12px; }
+      .chip { font-size:.78rem; font-weight:600; border-radius:999px; padding:3px 10px; border:1px solid transparent; }
+      .chip-ok { background:#e7f6ec; color:#14532d; border-color:#bbe6c8; }
+      .chip-warn { background:#fdf6e3; color:#7a5b00; border-color:#efe0b0; }
+      .chip-bad { background:#fdeceb; color:#7a1c14; border-color:#f5c6c2; }
+      .chip-neutral { background:#f1f1f3; color:#3f3f46; border-color:#e3e3e3; }
+      .chip-ai { background:#f3e8ff; color:#6b21a8; border-color:#e2cbff; }
       .verdict { display:flex; align-items:center; gap:10px; font-size:1.3rem; font-weight:700; }
       .verdict .icon { font-size:1.5rem; }
       .verdict-ok { color:var(--ok); } .verdict-warn { color:var(--warn); } .verdict-bad { color:var(--bad); }

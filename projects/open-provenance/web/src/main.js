@@ -136,7 +136,29 @@ function render(name, r) {
     }
   }
   els.result.className = 'card shown';
-  els.result.innerHTML = `<p class="filename">${escapeHtml(name)}</p>` + blocks.join('');
+  els.result.innerHTML = `<p class="filename">${escapeHtml(name)}</p>` + summaryChips(r) + blocks.join('');
+}
+
+// One combined at-a-glance row: authenticity verdict + trust + AI status together.
+function summaryChips(r) {
+  const chips = [];
+  if (r.verdict === Verdict.VERIFIED) chips.push(chip('✅ Verified', 'chip-ok'));
+  else if (r.verdict === Verdict.NO_CREDENTIALS && r.recovery?.match) chips.push(chip('🧬 Recovered', 'chip-ok'));
+  else if (r.verdict === Verdict.NO_CREDENTIALS) chips.push(chip('⚠ No credentials', 'chip-warn'));
+  else chips.push(chip('❌ Invalid', 'chip-bad'));
+
+  if (r.verdict === Verdict.VERIFIED) {
+    const t = r.trust?.status;
+    chips.push(t === 'trusted' ? chip('✓ Trusted signer', 'chip-ok')
+      : t === 'untrusted' ? chip('⚠ Untrusted signer', 'chip-warn')
+      : chip('Trust unchecked', 'chip-neutral'));
+    chips.push(r.aiGenerated ? chip('🤖 AI-generated', 'chip-ai') : chip('No AI marker', 'chip-neutral'));
+  }
+  return `<div class="chips">${chips.join('')}</div>`;
+}
+
+function chip(label, cls) {
+  return `<span class="chip ${cls}">${label}</span>`;
 }
 
 async function handle(file) {
