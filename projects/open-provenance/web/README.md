@@ -42,6 +42,23 @@ result shows one of:
 The list is stored only in this browser (`localStorage`) and trust validation runs fully
 offline — no network fetching is enabled.
 
+## Recovery registry — the front door, in the browser
+
+When an image has **no** credentials, the app can still try to recover provenance from a
+registry *you* load (the **🧬 Recovery registry** panel). The perceptual fingerprint is
+computed in your browser and matched locally — **fully offline, nothing uploaded**. The JS
+fingerprint matches the Python/OpenCV one **bit-for-bit** (regression-tested in
+`test/phash.test.mjs`), so a registry produced by the durable tools works here directly:
+
+```bash
+# build a registry with the CLI/server, then paste registry.json into the panel
+python3 durable/registry.py register signed.jpg --id urn:example:1
+```
+
+This browser path covers re-compression and scaling. Crop-robust ORB recovery is heavier and
+stays in the CLI/`verify_any.py`/server. A no-credentials image with no registry match reads
+as an honest **unknown** — never "fake."
+
 ## Honest limits (this version)
 
 - **A trust list is only as good as what you put in it.** With no list configured, the

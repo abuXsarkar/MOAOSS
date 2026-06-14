@@ -34,7 +34,10 @@
       .trust-bad { background:#fdeceb; color:#7a1c14; border:1px solid #f5c6c2; }
       .trust-neutral { background:#f4f4f5; color:#3f3f46; border:1px solid #e3e3e3; }
       .trustbox { margin-top:18px; }
-      #trust-toggle { background:none; border:none; color:#1a56db; font-size:.85rem; cursor:pointer; padding:0; }
+      #trust-toggle, #recovery-toggle { background:none; border:none; color:#1a56db; font-size:.85rem; cursor:pointer; padding:0; }
+      #recovery-panel { border:1px solid var(--line); background:#fff; border-radius:10px; padding:12px; margin-top:8px; }
+      #recovery-json { width:100%; min-height:80px; font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; border:1px solid var(--line); border-radius:6px; padding:8px; resize:vertical; }
+      #recovery-status { font-size:.82rem; color:var(--muted); margin:8px 0 0; }
       #trust-panel { border:1px solid var(--line); background:#fff; border-radius:10px; padding:12px; margin-top:8px; }
       #trust-anchors { width:100%; min-height:96px; font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; border:1px solid var(--line); border-radius:6px; padding:8px; resize:vertical; }
       #trust-status { font-size:.82rem; color:var(--muted); margin:8px 0 0; }
@@ -65,6 +68,19 @@
       <input id="file" type="file" accept="image/*" hidden />
 
       <section id="result" class="card" aria-live="polite"></section>
+
+      <div class="trustbox">
+        <button id="recovery-toggle" type="button" aria-controls="recovery-panel">🧬 Recovery registry — find stripped content (advanced)</button>
+        <div id="recovery-panel" hidden>
+          <p class="hint" style="margin-top:0">Paste a recovery registry JSON (produced by <code>durable/registry.py</code>). When an image has <em>no</em> credentials, it is matched against this registry by perceptual fingerprint — computed in your browser, <strong>fully offline, no upload</strong>. Covers re-compression and scaling; cropping needs the CLI/server (ORB). Stored only in this browser.</p>
+          <textarea id="recovery-json" placeholder='{"entries":[{"manifest_id":"urn:...","phash":"c4c62e705bb94b17"}]}' spellcheck="false"></textarea>
+          <div class="trust-actions">
+            <button id="recovery-save" type="button">Save registry</button>
+            <button id="recovery-clear" type="button">Clear</button>
+          </div>
+          <p id="recovery-status"></p>
+        </div>
+      </div>
 
       <div class="trustbox">
         <button id="trust-toggle" type="button" aria-controls="trust-panel">⚙ Trust list — who do you trust to sign? (advanced)</button>
