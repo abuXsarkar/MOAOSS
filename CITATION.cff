@@ -1,0 +1,25 @@
+cff-version: 1.2.0
+message: "If you use open-provenance in your research, please cite it as below."
+title: "open-provenance: An Open, Offline, User-Governed System for Verifiable Media Provenance and Durable Recovery"
+authors:
+  - family-names: Sarkar
+    given-names: Abu Sufian
+    email: abu@cyberdude.com
+license: Apache-2.0
+repository-code: "https://github.com/abuXsarkar/open-provenance"
+abstract: >-
+  open-provenance is an open-source system, built on the C2PA standard, for verifying
+  media provenance offline, with user-governed trust (no central gatekeeper) and a
+  conservative, honest verdict model. It includes a CLI and a zero-backend in-browser
+  WebAssembly verifier, a signing tool, and a prototype "durable" recovery layer
+  (perceptual-fingerprint registry plus robust watermarking) that recovers provenance
+  after metadata stripping, with a reproducible evaluation harness.
+keywords:
+  - content provenance
+  - C2PA
+  - content credentials
+  - media authenticity
+  - watermarking
+  - perceptual hashing
+  - deepfakes
+  - AI-generated content
