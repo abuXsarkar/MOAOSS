@@ -18,11 +18,27 @@ the paper stays honest and reproducible.
 # 1. Regenerate tables/figures from measurements
 ./refresh-results.sh
 
-# 2. Build the PDF (needs a TeX distribution: texlive, MacTeX, or tectonic)
-latexmk -pdf main.tex        # or: pdflatex main && bibtex main && pdflatex main && pdflatex main
-# or, single binary:
-tectonic main.tex
+# 2. Build the PDF
+pdflatex -interaction=nonstopmode main.tex
+bibtex main
+pdflatex -interaction=nonstopmode main.tex
+pdflatex -interaction=nonstopmode main.tex
+# (or simply: latexmk -pdf main.tex)
 ```
+
+### Verified build recipe
+
+This document was compiled successfully (7 pages, no undefined references or citations).
+On Debian/Ubuntu the required TeX packages are:
+
+```bash
+sudo apt-get install -y --no-install-recommends \
+  texlive-latex-base texlive-latex-recommended texlive-latex-extra \
+  texlive-fonts-recommended texlive-bibtex-extra
+```
+
+On macOS, MacTeX provides everything; `tectonic main.tex` also works if its bundle host is
+reachable. A prebuilt `main.pdf` is committed for convenience.
 
 ## Path to arXiv + Zenodo DOI
 
