@@ -26,8 +26,8 @@ import cv2
 import numpy as np
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "durable"))
-from lib import (PAYLOAD_BITS, embed_watermark, extract_watermark, hamming, jpeg,  # noqa: E402
-                 phash_bits, rescale_roundtrip)
+from lib import (ORB_MIN_INLIERS, PAYLOAD_BITS, embed_watermark, extract_watermark,  # noqa: E402
+                 hamming, jpeg, orb_features, orb_inliers, phash_bits, rescale_roundtrip)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 CORPUS = os.path.join(HERE, "corpus")
@@ -47,33 +47,8 @@ def load_corpus():
     return [cv2.imread(p) for p in paths]
 
 
-# Crop-robust recovery via ORB keypoints + RANSAC geometric verification. Unlike a global
-# perceptual hash, local features survive cropping: a crop still contains many of the
-# original keypoints, and a homography consensus confirms the match.
-_ORB = cv2.ORB_create(nfeatures=1500)
-_BF = cv2.BFMatcher(cv2.NORM_HAMMING)
-ORB_MIN_INLIERS = 12
-
-
-def orb_features(img):
-    g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    return _ORB.detectAndCompute(g, None)  # (keypoints, descriptors)
-
-
-def orb_inliers(qf, df):
-    (qk, qd), (dk, dd) = qf, df
-    if qd is None or dd is None or len(qd) < 4 or len(dd) < 4:
-        return 0
-    good = []
-    for pair in _BF.knnMatch(qd, dd, k=2):
-        if len(pair) == 2 and pair[0].distance < 0.75 * pair[1].distance:
-            good.append(pair[0])
-    if len(good) < 4:
-        return len(good)
-    src = np.float32([qk[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
-    dst = np.float32([dk[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
-    H, mask = cv2.findHomography(src, dst, cv2.RANSAC, 5.0)
-    return int(mask.sum()) if mask is not None else 0
+# Crop-robust recovery (ORB keypoints + RANSAC) lives in durable/lib.py and is imported
+# above, so the evaluation and the persistent registry share one implementation.
 
 
 def center_crop_rescale(img, keep):

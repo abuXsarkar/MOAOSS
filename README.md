@@ -46,12 +46,15 @@ signature from a party you don't trust is shown as a warning, never an endorseme
 
 | Component | Path | What it does |
 | --- | --- | --- |
+| **Verify any image** | `projects/open-provenance/verify_any.py` | The front door: C2PA verify → AI marker → durable recovery → honest *unknown*, one layered result. |
 | **CLI verifier** | [`projects/open-provenance`](projects/open-provenance) | Offline verdict on a file (`node src/verify.mjs <file>`). |
 | **Browser verifier** | [`projects/open-provenance/web`](projects/open-provenance/web) | Zero-backend WASM page — drop a file, verify locally, fully offline. |
-| **Signing** | `projects/open-provenance/tools/sign.mjs` | Sign an image; optionally tag it AI-generated. |
+| **Participant SDK** | `projects/open-provenance/src/participant.mjs` | The minimal path for *any* entity to sign and join the chain ([become a participant](projects/open-provenance/BECOME-A-PARTICIPANT.md)). |
+| **Signing** | `projects/open-provenance/tools/sign.mjs` | Sign an image (cert/key or test signer); optionally tag it AI-generated. |
 | **AI-generated detection** | shared classifier | Flags the IPTC `digitalSourceType` marker (Nano Banana, GPT-image, Seedance, …) when credentials are intact. |
 | **User-governed trust lists** | [`projects/open-provenance/trust`](projects/open-provenance/trust) | Validate signers against anchors *you* choose. |
-| **Durable recovery** | [`projects/open-provenance/durable`](projects/open-provenance/durable) | Recover provenance after metadata stripping (fingerprint registry + watermark). |
+| **Durable recovery** | [`projects/open-provenance/durable`](projects/open-provenance/durable) | Recover provenance after metadata stripping (perceptual hash + crop-robust ORB + watermark registry). |
+| **Interoperability** | [`CONFORMANCE.md`](projects/open-provenance/CONFORMANCE.md) | Emit standard C2PA; read any C2PA — adoptable by anyone, no private format. |
 | **Evaluation harness** | `projects/open-provenance/eval` | Regenerates every number/figure in the paper. |
 
 ## Quick start
@@ -59,8 +62,9 @@ signature from a party you don't trust is shown as a warning, never an endorseme
 ```bash
 cd projects/open-provenance
 npm install
-node src/verify.mjs path/to/image.jpg     # offline verdict; --json for machine output
-npm test                                   # verdict classifier unit tests
+node src/verify.mjs path/to/image.jpg     # offline C2PA verdict; --json for machine output
+python3 verify_any.py path/to/image.jpg    # front door: verify -> AI -> durable recovery -> honest unknown
+npm test                                   # verdict classifier + conformance tests
 
 cd web && npm install && npm run dev       # offline browser verifier
 ```
