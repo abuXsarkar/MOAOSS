@@ -19,8 +19,30 @@ export function adaptWebManifestStore(ms) {
         }
       : null,
     manifests: ms.manifests ?? {},
-    validation_status: ms.validationStatus ?? [],
+    validation_status: collectStatuses(ms),
   };
+}
+
+// Gather validation codes from BOTH the legacy validationStatus array and the newer
+// validationResults structure, so trust outcomes (signingCredential.trusted/untrusted)
+// are picked up regardless of which the toolkit version populates.
+function collectStatuses(ms) {
+  const out = [];
+  const push = (arr) => {
+    if (Array.isArray(arr)) {
+      for (const s of arr) if (s && s.code) out.push({ code: s.code, explanation: s.explanation ?? s.url });
+    }
+  };
+  push(ms.validationStatus);
+  const vr = ms.validationResults;
+  if (vr) {
+    const am = vr.activeManifest;
+    if (am) { push(am.success); push(am.informational); push(am.failure); }
+    if (Array.isArray(vr.ingredientDeltas)) {
+      for (const d of vr.ingredientDeltas) { push(d?.success); push(d?.informational); push(d?.failure); }
+    }
+  }
+  return out;
 }
 
 function collectActionAssertions(manifest) {

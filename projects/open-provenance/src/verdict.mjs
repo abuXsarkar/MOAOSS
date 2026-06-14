@@ -12,6 +12,18 @@ export const Verdict = Object.freeze({
   INVALID: 'INVALID',
 });
 
+// Trust is reported SEPARATELY from the verdict, because a cryptographically valid
+// signature from a signer you don't trust tells you nothing about identity.
+//   trusted   - the signer's certificate chains to an anchor on the user's trust list.
+//   untrusted - a trust engine checked and the signer is NOT on the user's trust list.
+//   unchecked - no trust evaluation was performed (no trust list configured, or the
+//               verifier has no trust engine — e.g. the current CLI library).
+export const TrustStatus = Object.freeze({
+  TRUSTED: 'trusted',
+  UNTRUSTED: 'untrusted',
+  UNCHECKED: 'unchecked',
+});
+
 // We classify C2PA validation-status codes by suffix/token rather than enumerating every
 // code, so this keeps working as the upstream code list evolves across c2pa versions.
 const FAILURE_TOKENS = [
@@ -63,6 +75,7 @@ export function classify(manifestStore) {
     edits: extractEdits(m),
     aiGenerated: ai.aiGenerated,
     aiSourceType: ai.aiSourceType,
+    trust: evalTrust(statuses),
     failures: failures.map(pick),
     trustWarnings: trustWarnings.map(pick),
   };
@@ -112,6 +125,19 @@ function detectAi(manifest) {
   };
 }
 
+// Derive trust from the validation-status codes. Note "untrusted" contains the substring
+// "trusted", so it must be checked first.
+function evalTrust(statuses) {
+  const codes = statuses.map((s) => String(s.code || '').toLowerCase());
+  if (codes.some((c) => c.includes('untrusted'))) {
+    return { status: TrustStatus.UNTRUSTED, basis: 'chain-validated' };
+  }
+  if (codes.some((c) => c.includes('trusted'))) {
+    return { status: TrustStatus.TRUSTED, basis: 'chain-validated' };
+  }
+  return { status: TrustStatus.UNCHECKED, basis: 'not-evaluated' };
+}
+
 function pick(s) {
   return s.explanation ? { code: s.code, explanation: s.explanation } : { code: s.code };
 }
@@ -119,6 +145,8 @@ function pick(s) {
 function base(verdict) {
   return {
     verdict, signer: null, tool: null, signedAt: null, edits: [],
-    aiGenerated: false, aiSourceType: null, failures: [], trustWarnings: [],
+    aiGenerated: false, aiSourceType: null,
+    trust: { status: TrustStatus.UNCHECKED, basis: 'not-evaluated' },
+    failures: [], trustWarnings: [],
   };
 }

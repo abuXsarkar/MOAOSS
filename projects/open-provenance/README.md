@@ -74,7 +74,10 @@ below, deliberately deferred so v0.1 is finishable.
 - **AI-generated detection** — flag the IPTC `digitalSourceType` marker (Nano Banana,
   GPT image, Seedance, etc.) in CLI and web. ✅ done
 - **v0.3** — Signing at point of capture.
-- **v0.4** — User-controlled trust lists & revocation, no central authority.
+- **v0.4** — User-controlled trust lists, no central authority. ✅ done in the web verifier
+  (paste your own trust anchors; the toolkit validates the signer chain against them,
+  offline). The CLI library (c2pa-node) exposes no trust engine, so the CLI reports trust
+  as *unchecked*; revocation handling remains future work.
 - **v0.5** — Video/audio; decentralized provenance anchoring.
 - **Durable credentials** — recover provenance after metadata is stripped, via a
   perceptual-fingerprint registry + robust watermark. 🧪 prototype in

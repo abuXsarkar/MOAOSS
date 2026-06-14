@@ -2,7 +2,7 @@
 // synthetic manifest stores, so they need no native binding and run anywhere.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { classify, Verdict } from '../src/verdict.mjs';
+import { classify, Verdict, TrustStatus } from '../src/verdict.mjs';
 
 test('null store -> NO_CREDENTIALS', () => {
   assert.equal(classify(null).verdict, Verdict.NO_CREDENTIALS);
@@ -72,15 +72,34 @@ test('hash mismatch -> INVALID', () => {
   assert.equal(r.failures[0].code, 'assertion.dataHash.mismatch');
 });
 
-test('untrusted signer is a WARNING, not a failure -> VERIFIED + trustWarnings', () => {
+test('untrusted signer is a WARNING, not a failure -> VERIFIED + trust untrusted', () => {
   const r = classify({
     active_manifest: { signature_info: { issuer: 'self-signed' } },
     manifests: { m1: {} },
     validation_status: [{ code: 'signingCredential.untrusted' }],
   });
   assert.equal(r.verdict, Verdict.VERIFIED);
-  assert.equal(r.trustWarnings.length, 1);
+  assert.equal(r.trust.status, TrustStatus.UNTRUSTED);
   assert.equal(r.failures.length, 0);
+});
+
+test('trusted signer -> trust trusted', () => {
+  const r = classify({
+    active_manifest: { signature_info: { issuer: 'Leica Camera AG' } },
+    manifests: { m1: {} },
+    validation_status: [{ code: 'signingCredential.trusted' }],
+  });
+  assert.equal(r.verdict, Verdict.VERIFIED);
+  assert.equal(r.trust.status, TrustStatus.TRUSTED);
+});
+
+test('no trust statuses -> trust unchecked', () => {
+  const r = classify({
+    active_manifest: { signature_info: { issuer: 'X' } },
+    manifests: { m1: {} },
+    validation_status: [],
+  });
+  assert.equal(r.trust.status, TrustStatus.UNCHECKED);
 });
 
 test('invalid signature -> INVALID', () => {

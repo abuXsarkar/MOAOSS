@@ -21,9 +21,20 @@ function getC2pa() {
   return c2paPromise;
 }
 
+const TRUST_KEY = 'open-provenance:trust-anchors';
+const getTrustAnchors = () => (localStorage.getItem(TRUST_KEY) || '').trim();
+
 async function verify(file) {
   const c2pa = await getC2pa();
-  const { manifestStore } = await c2pa.read(file);
+  const anchors = getTrustAnchors();
+  // User-controlled trust: if the user supplied trust anchors, the toolkit cryptographically
+  // validates the signer's certificate chain against THEM (no central gatekeeper). All
+  // network fetching stays off, so this is still fully offline.
+  const settings = {
+    verify: { verifyTrust: Boolean(anchors), ocspFetch: false, remoteManifestFetch: false },
+    ...(anchors ? { trust: { trustAnchors: anchors } } : {}),
+  };
+  const { manifestStore } = await c2pa.read(file, { settings });
   return classify(adaptWebManifestStore(manifestStore));
 }
 
@@ -54,11 +65,9 @@ function render(name, r) {
       r.signedAt && ['Signed at', r.signedAt],
       r.edits.length && ['Declared edits', r.edits.join(', ')],
     ]));
+    blocks.push(trustNote(r.trust));
     blocks.push(
       `<p class="note">“Verified” means the provenance chain is intact — <strong>not</strong> that the depicted events are true.</p>`,
-    );
-    blocks.push(
-      `<p class="note warn">Identity-trust is not yet enforced in this version: the signer name above is <strong>as claimed</strong>, not confirmed against a trust list. User-controlled trust lists are on the roadmap.</p>`,
     );
   } else if (r.verdict === Verdict.NO_CREDENTIALS) {
     blocks.push(row('⚠️', 'No Credentials', 'verdict-warn'));
@@ -106,8 +115,55 @@ els.drop.addEventListener('drop', (e) => handle(e.dataTransfer?.files?.[0]));
 
 // ---- tiny helpers ----------------------------------------------------------
 
+function trustNote(trust) {
+  if (trust.status === 'trusted') {
+    return `<p class="trust trust-ok">✓ <strong>Trusted signer</strong> — the certificate chains to an anchor on your trust list.</p>`;
+  }
+  if (trust.status === 'untrusted') {
+    return `<p class="trust trust-bad">⚠ <strong>Not trusted</strong> — the signature is valid, but the signer is <strong>not</strong> on your trust list. Treat the signer name as unconfirmed.</p>`;
+  }
+  return `<p class="trust trust-neutral">ⓘ <strong>Trust not checked.</strong> The signer name is <strong>as claimed</strong>. Add a trust list below to confirm the signer cryptographically.</p>`;
+}
+
 function row(icon, label, cls) {
   return `<div class="verdict ${cls}"><span class="icon">${icon}</span><span>${label}</span></div>`;
+}
+
+// ---- trust-list management (stored locally, applied offline) ----------------
+
+const trustEls = {
+  toggle: document.getElementById('trust-toggle'),
+  panel: document.getElementById('trust-panel'),
+  text: document.getElementById('trust-anchors'),
+  save: document.getElementById('trust-save'),
+  clear: document.getElementById('trust-clear'),
+  status: document.getElementById('trust-status'),
+};
+
+function refreshTrustStatus() {
+  const anchors = getTrustAnchors();
+  const count = (anchors.match(/-----BEGIN CERTIFICATE-----/g) || []).length;
+  trustEls.status.textContent = count
+    ? `${count} trust anchor${count === 1 ? '' : 's'} configured — signers will be validated against your list.`
+    : 'No trust list configured — signer identity is shown as claimed, not confirmed.';
+}
+
+if (trustEls.toggle) {
+  trustEls.text.value = getTrustAnchors();
+  refreshTrustStatus();
+  trustEls.toggle.addEventListener('click', () => {
+    const open = trustEls.panel.hasAttribute('hidden');
+    if (open) trustEls.panel.removeAttribute('hidden'); else trustEls.panel.setAttribute('hidden', '');
+  });
+  trustEls.save.addEventListener('click', () => {
+    localStorage.setItem(TRUST_KEY, trustEls.text.value.trim());
+    refreshTrustStatus();
+  });
+  trustEls.clear.addEventListener('click', () => {
+    localStorage.removeItem(TRUST_KEY);
+    trustEls.text.value = '';
+    refreshTrustStatus();
+  });
 }
 function defList(pairs) {
   const rows = pairs.filter(Boolean).map(([k, v]) => `<div><dt>${escapeHtml(k)}</dt><dd>${escapeHtml(String(v))}</dd></div>`).join('');

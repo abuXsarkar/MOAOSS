@@ -29,6 +29,17 @@
       .note { font-size:.85rem; color:var(--muted); margin:.5em 0; }
       .note.warn { color:var(--warn); }
       .ai-badge { display:inline-block; background:#f3e8ff; color:#6b21a8; border:1px solid #e2cbff; border-radius:10px; padding:8px 12px; font-size:.92rem; margin:.4em 0; }
+      .trust { font-size:.9rem; border-radius:10px; padding:9px 12px; margin:.5em 0; }
+      .trust-ok { background:#e7f6ec; color:#14532d; border:1px solid #bbe6c8; }
+      .trust-bad { background:#fdeceb; color:#7a1c14; border:1px solid #f5c6c2; }
+      .trust-neutral { background:#f4f4f5; color:#3f3f46; border:1px solid #e3e3e3; }
+      .trustbox { margin-top:18px; }
+      #trust-toggle { background:none; border:none; color:#1a56db; font-size:.85rem; cursor:pointer; padding:0; }
+      #trust-panel { border:1px solid var(--line); background:#fff; border-radius:10px; padding:12px; margin-top:8px; }
+      #trust-anchors { width:100%; min-height:96px; font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; border:1px solid var(--line); border-radius:6px; padding:8px; resize:vertical; }
+      #trust-status { font-size:.82rem; color:var(--muted); margin:8px 0 0; }
+      .trust-actions { display:flex; gap:8px; margin-top:8px; }
+      .trust-actions button { font-size:.85rem; padding:6px 12px; border-radius:6px; border:1px solid var(--line); background:#f7f7f7; cursor:pointer; }
       dl { margin:.8em 0; display:grid; gap:6px; }
       dl > div { display:grid; grid-template-columns:130px 1fr; gap:8px; }
       dt { color:var(--muted); font-size:.85rem; }
@@ -54,6 +65,19 @@
       <input id="file" type="file" accept="image/*" hidden />
 
       <section id="result" class="card" aria-live="polite"></section>
+
+      <div class="trustbox">
+        <button id="trust-toggle" type="button" aria-controls="trust-panel">⚙ Trust list — who do you trust to sign? (advanced)</button>
+        <div id="trust-panel" hidden>
+          <p class="hint" style="margin-top:0">Paste the PEM certificate(s) of the root authorities you trust. Signers are then cryptographically validated against <em>your</em> list — there is no central gatekeeper, and this stays fully offline. Stored only in this browser.</p>
+          <textarea id="trust-anchors" placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----" spellcheck="false"></textarea>
+          <div class="trust-actions">
+            <button id="trust-save" type="button">Save trust list</button>
+            <button id="trust-clear" type="button">Clear</button>
+          </div>
+          <p id="trust-status"></p>
+        </div>
+      </div>
 
       <footer>
         Part of <strong>open-provenance</strong> — open-source, Apache-2.0. Built on the open

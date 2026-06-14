@@ -28,12 +28,24 @@ The built `dist/` is a static folder: copy it onto any machine and serve it with
 static file server (workers + WASM require http(s), not `file://`). Once loaded, it works
 with no network.
 
+## Trust list (user-controlled, v0.4)
+
+Open the **⚙ Trust list** panel and paste the PEM certificate(s) of the root authorities
+*you* choose to trust. The toolkit then cryptographically validates each signer's
+certificate chain against **your** anchors — there is no central gatekeeper — and the
+result shows one of:
+
+- **✓ Trusted signer** — chains to an anchor on your list.
+- **⚠ Not trusted** — signature valid, but the signer is not on your list.
+- **ⓘ Trust not checked** — no list configured; the signer name is shown as claimed.
+
+The list is stored only in this browser (`localStorage`) and trust validation runs fully
+offline — no network fetching is enabled.
+
 ## Honest limits (this version)
 
-- **Identity-trust is not yet enforced.** A VERIFIED result means the provenance chain is
-  cryptographically intact — the signer name is shown **as claimed**, not confirmed
-  against a trust list. User-controlled trust lists are roadmap v0.4. The UI states this
-  explicitly so no one over-trusts a self-signed manifest.
+- **A trust list is only as good as what you put in it.** With no list configured, the
+  signer name is *as claimed*, not confirmed.
 - **Images first.** Video/audio containers are a later milestone.
 
 ## Stack

@@ -70,9 +70,13 @@ function render(file, r) {
     if (r.tool) L.push(`   Produced by:  ${r.tool}`);
     if (r.signedAt) L.push(`   Signed at:    ${r.signedAt}`);
     if (r.edits.length) L.push(`   Declared edits: ${r.edits.join(', ')}`);
-    if (r.trustWarnings.length) {
-      L.push('   ⚠ Signer is NOT on a trust list. The signature is mathematically');
-      L.push('     valid, but this does not establish *who* the signer really is.');
+    if (r.trust.status === 'trusted') {
+      L.push('   ✓ Trusted: the signer chains to an anchor on your trust list.');
+    } else if (r.trust.status === 'untrusted') {
+      L.push('   ⚠ NOT trusted: the signature is valid, but the signer is not on your trust list.');
+    } else {
+      L.push('   ⓘ Trust not evaluated here (the CLI library has no trust engine). The signer');
+      L.push('     name is as claimed — confirm it with the web verifier and a trust list.');
     }
     L.push('   Note: "verified" means the chain is intact, NOT that the depicted events are true.');
   } else if (r.verdict === Verdict.NO_CREDENTIALS) {
