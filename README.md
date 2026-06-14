@@ -72,11 +72,12 @@ cd web && npm install && npm run dev       # offline browser verifier
 - **We cannot read proprietary watermarks** (e.g. SynthID). Once a third-party AI image is
   stripped of its C2PA metadata, the open ecosystem cannot recover its provenance. Durable
   recovery protects content that passes through *participating* signers.
-- **Durable recovery is robust to recompression and scaling but not cropping.** On the
-  Kodak natural images, fingerprint recovery is robust to resize + JPEG (AUC = 1.0) yet
-  degrades under cropping (recovery 1.0 → 0.50 as retained area falls to 70%); the
-  lightweight watermark fails by JPEG quality ≈ 50. We report this honestly rather than
-  averaging it away — see the paper.
+- **Durable recovery: robust to recompression/scaling, and now to cropping.** On the Kodak
+  natural images, fingerprint recovery is robust to resize + JPEG (AUC = 1.0). A global
+  perceptual hash collapses under cropping, so a crop-robust keypoint path (ORB + RANSAC)
+  restores it — 100% recovery down to 50% retained area, 75% at 30% retained, where the hash
+  recovers nothing. The lightweight watermark fails by JPEG quality ≈ 50. Failures and their
+  mitigations are reported together — see the paper.
 
 ## Reproducibility
 

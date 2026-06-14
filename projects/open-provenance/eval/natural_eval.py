@@ -36,7 +36,7 @@ os.makedirs(OUT, exist_ok=True)
 
 JPEG_QUALITIES = [90, 70, 50, 30]
 SCALES = [1.0, 0.70]
-CROP_KEEP = [1.00, 0.95, 0.90, 0.80, 0.70]
+CROP_KEEP = [1.00, 0.90, 0.80, 0.70, 0.60, 0.50, 0.40, 0.30]
 
 
 def load_corpus():
@@ -45,6 +45,35 @@ def load_corpus():
         sys.exit(f"error: need >=4 images in {CORPUS}; run eval/fetch_corpus.sh "
                  f"(found {len(paths)}).")
     return [cv2.imread(p) for p in paths]
+
+
+# Crop-robust recovery via ORB keypoints + RANSAC geometric verification. Unlike a global
+# perceptual hash, local features survive cropping: a crop still contains many of the
+# original keypoints, and a homography consensus confirms the match.
+_ORB = cv2.ORB_create(nfeatures=1500)
+_BF = cv2.BFMatcher(cv2.NORM_HAMMING)
+ORB_MIN_INLIERS = 12
+
+
+def orb_features(img):
+    g = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    return _ORB.detectAndCompute(g, None)  # (keypoints, descriptors)
+
+
+def orb_inliers(qf, df):
+    (qk, qd), (dk, dd) = qf, df
+    if qd is None or dd is None or len(qd) < 4 or len(dd) < 4:
+        return 0
+    good = []
+    for pair in _BF.knnMatch(qd, dd, k=2):
+        if len(pair) == 2 and pair[0].distance < 0.75 * pair[1].distance:
+            good.append(pair[0])
+    if len(good) < 4:
+        return len(good)
+    src = np.float32([qk[m.queryIdx].pt for m in good]).reshape(-1, 1, 2)
+    dst = np.float32([dk[m.trainIdx].pt for m in good]).reshape(-1, 1, 2)
+    H, mask = cv2.findHomography(src, dst, cv2.RANSAC, 5.0)
+    return int(mask.sum()) if mask is not None else 0
 
 
 def center_crop_rescale(img, keep):
@@ -112,19 +141,27 @@ def n2_roc(imgs):
 
 
 def n3_crop(imgs):
-    reg = [phash_bits(img) for img in imgs]
+    """Crop sensitivity, comparing the global perceptual hash against crop-robust ORB
+    keypoint matching. Crop severity is expressed as the RETAINED center fraction r."""
+    reg_ph = [phash_bits(img) for img in imgs]
+    reg_orb = [orb_features(img) for img in imgs]
     rows = []
     for keep in CROP_KEEP:
-        correct, mated_d = 0, []
+        ph_correct, orb_correct = 0, 0
         for i, img in enumerate(imgs):
             # crop, then mild recompression (a crop in the wild is also re-encoded)
             t = jpeg(center_crop_rescale(img, keep), 70)
-            q = phash_bits(t)
-            ranked = sorted((hamming(q, reg[j]), j) for j in range(len(reg)))
-            correct += int(ranked[0][1] == i)
-            mated_d.append(hamming(q, reg[i]))
-        rows.append({"crop_keep": keep, "nn_recovery_rate": round(correct / len(imgs), 4),
-                     "mean_mated_distance": round(float(np.mean(mated_d)), 2)})
+            # pHash nearest neighbour
+            qph = phash_bits(t)
+            ph_correct += int(min(range(len(reg_ph)), key=lambda j: hamming(qph, reg_ph[j])) == i)
+            # ORB nearest neighbour with an inlier floor
+            qf = orb_features(t)
+            scores = [orb_inliers(qf, reg_orb[j]) for j in range(len(reg_orb))]
+            best = int(np.argmax(scores))
+            orb_correct += int(best == i and scores[best] >= ORB_MIN_INLIERS)
+        rows.append({"retained": keep,
+                     "phash_recovery": round(ph_correct / len(imgs), 4),
+                     "orb_recovery": round(orb_correct / len(imgs), 4)})
     return rows
 
 
@@ -169,19 +206,21 @@ def main():
     figured = plot_roc(roc, auc)
 
     n3 = n3_crop(imgs); write_csv(os.path.join(OUT, "nat_e3_crop.csv"), n3)
-    latex_table(n3, ["crop_keep", "nn_recovery_rate", "mean_mated_distance"],
-                ["crop (keep)", "recovery rate", "mean mated dist."],
+    latex_table(n3, ["retained", "phash_recovery", "orb_recovery"],
+                ["retained $r$", "pHash recovery", "ORB recovery"],
                 os.path.join(OUT, "nat_e3_crop.tex"),
-                {"crop_keep": lambda v: f"{v:.2f}", "nn_recovery_rate": lambda v: f"{v:.2f}",
-                 "mean_mated_distance": lambda v: f"{v:.1f}"})
+                {"retained": lambda v: f"{v:.2f}", "phash_recovery": lambda v: f"{v:.2f}",
+                 "orb_recovery": lambda v: f"{v:.2f}"})
 
     summary = {
         "n_images": len(imgs), "auc": round(auc, 4),
         "eer_threshold": eer["threshold"], "eer_tpr": eer["tpr"], "eer_fpr": eer["fpr"],
         "mean_mated_distance": round(float(np.mean(mated)), 2),
         "mean_impostor_distance": round(float(np.mean(impostor)), 2),
-        "recovery_nocrop": next(r["nn_recovery_rate"] for r in n3 if r["crop_keep"] == 1.0),
-        "recovery_crop80": next(r["nn_recovery_rate"] for r in n3 if r["crop_keep"] == 0.80),
+        "phash_recovery_r70": next(r["phash_recovery"] for r in n3 if r["retained"] == 0.70),
+        "orb_recovery_r70": next(r["orb_recovery"] for r in n3 if r["retained"] == 0.70),
+        "phash_recovery_r80": next(r["phash_recovery"] for r in n3 if r["retained"] == 0.80),
+        "orb_recovery_r80": next(r["orb_recovery"] for r in n3 if r["retained"] == 0.80),
     }
     write_csv(os.path.join(OUT, "nat_summary.csv"), [summary])
     print("\n--- natural-image summary ---")

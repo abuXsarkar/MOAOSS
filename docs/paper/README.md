@@ -56,8 +56,9 @@ reachable. A prebuilt `main.pdf` is committed for convenience.
 
 ## Status
 
-Draft. The evaluation runs on the Kodak natural-image suite ($18$ photographs) and reports
-an honest, differentiated result: fingerprint recovery is robust to recompression and
-scaling (AUC $=1.0$) but degrades under cropping (recovery $1.0\to0.50$ as retained area
-falls to $70\%$), and the lightweight watermark fails by JPEG quality $\approx 50$. Larger
-and adversarial benchmarks, and crop-robust methods, are the next step.
+Draft. The evaluation runs on the Kodak natural-image suite ($24$ photographs). Fingerprint
+recovery is robust to recompression and scaling (AUC $=1.0$). A global perceptual hash
+collapses under cropping, so a crop-robust local-feature path (ORB + RANSAC) is added — it
+sustains full recovery down to $50\%$ retained area and $0.75$ at $30\%$ retained, where the
+hash recovers nothing. The lightweight watermark fails by JPEG quality $\approx 50$. Web-scale
+collision analysis, rotation/warp robustness, and learned watermarks are the next steps.
