@@ -65,6 +65,27 @@ Takeaway that shaped the design: the **fingerprint path is the robust primary re
 mechanism**; the embedded watermark is a complementary, self-contained pointer that needs
 a *learned* method to be JPEG/screenshot-robust.
 
+## Registry CLI (register / recover)
+
+`registry.py` turns the recovery flow into a usable tool. Register signed content, then
+recover its manifest from a stripped, transported copy:
+
+```bash
+cd projects/open-provenance/durable
+pip install -r requirements.txt
+
+# Register an image against a manifest id (optionally write a watermarked copy):
+python3 registry.py register photo.jpg --id manifest-abc123 --watermark-out photo.wm.jpg
+
+# Later, recover a screenshot/re-uploaded copy whose C2PA metadata is gone:
+python3 registry.py recover screenshot.jpg
+#   -> RECOVERED: manifest-abc123  (distance 2/64, next-best 26/64)
+```
+
+A match is only reported within a Hamming-distance threshold (default 10/64), so an
+unregistered image is rejected rather than mis-attributed. Tests: `python3 -m unittest
+test_registry`.
+
 ## How this fits the verifier
 
 ```
