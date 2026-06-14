@@ -89,6 +89,9 @@ path, and robust watermarking, with a reproducible natural-image evaluation
 (\S\ref{sec:eval}).
 \item An explicit threat model and an honest account of what open provenance can and cannot
 do, including the proprietary-watermark gap (\S\ref{sec:threat},~\S\ref{sec:discussion}).
+\item A participation and adoption model---standard-C2PA interoperability, a minimal signer
+on-ramp, and a single ``verify any image'' pipeline that returns an honest \state{unknown}
+for unsigned content rather than guessing (\S\ref{sec:adoption}).
 \end{enumerate}
 
 \section{Background and Related Work}
@@ -275,6 +278,38 @@ Robust pixel watermarks deployed by major generative services (e.g.\ SynthID) ar
 third-party asset's provenance. Durable recovery here therefore protects content that passes
 through \emph{participating} signers---a meaningful but bounded guarantee, and an argument for
 open, interoperable robust-watermarking standards.
+
+\section{Adoption and the Participation Model}\label{sec:adoption}
+A verifier is only as useful as the breadth of \emph{signing}, so universal coverage is an
+adoption problem, not merely an engineering one. The system is designed to be adoptable by
+\emph{any} entity---a person, an application, a camera, an AI generator, or a platform---and
+its design choices follow from that goal.
+
+\paragraph{Interoperate, do not fork.} We deliberately emit and consume \emph{standard} C2PA
+rather than a private format. Content signed through our participant interface is readable by
+any C2PA verifier, and our verifier reads any C2PA asset regardless of signer, because it
+runs the reference toolkit. Adoption compounds only if implementations interoperate; a
+competing tag would fragment the very network effect it needs. This is the historical lesson
+of widely-adopted software substrates---value accrues to a common, re-implementable standard,
+not to private variants.
+
+\paragraph{Participation.} Becoming a participant is a single signing operation at one's
+point in the pipeline, beginning a chain of traceability there. The highest-leverage
+participants are platforms, whose dominant real-world behaviour today is to \emph{strip}
+credentials on ingest; a conformant platform should instead \emph{preserve} received
+credentials or re-sign on egress with the original chained as an ingredient.
+
+\paragraph{A front door for any media.} Coverage of ``any image'' is achieved by composing
+the layers into a single pipeline: C2PA verification, then---if no manifest is present---an
+attempt at durable recovery (\S\ref{sec:eval}), and otherwise an explicit \state{unknown}.
+The pipeline thus returns \emph{a} result for every input while never fabricating a
+provenance verdict for unsigned content.
+
+\paragraph{The irreducible boundary.} No provenance system, however widely adopted, can
+verify a chain that was never created. Universal coverage is therefore approached by
+universal \emph{signing} upstream, not by the verifier guessing downstream---which is exactly
+the unreliable detection problem provenance is meant to avoid. The honest terminal verdict
+\state{unknown} (not \emph{fake}) is the price and the point of that discipline.
 
 \section{Limitations and Ethics}
 The evaluation uses the $24$-image Kodak suite, a standard but modest scale that does not
