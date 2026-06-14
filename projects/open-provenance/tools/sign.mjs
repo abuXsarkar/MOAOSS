@@ -18,9 +18,8 @@
 // a machine with open egress. Verification (verify.mjs) never needs the network.
 import { readFile, writeFile } from 'node:fs/promises';
 import { basename, extname } from 'node:path';
-import { createC2pa, createTestSigner, ManifestBuilder, SigningAlgorithm } from 'c2pa-node';
+import { createParticipant } from '../src/participant.mjs';
 
-const AI_SOURCE = 'http://cv.iptc.org/newscodes/digitalsourcetype/trainedAlgorithmicMedia';
 const MIME = { '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png' };
 
 function parseArgs(argv) {
@@ -52,40 +51,25 @@ async function main(argv) {
   const mime = MIME[extname(a.input).toLowerCase()] ?? 'image/jpeg';
   const buffer = await readFile(a.input);
 
-  let signer;
-  if (a.cert) {
-    if (!a.key) { process.stderr.write('error: --cert requires --key\n'); return 2; }
-    signer = {
-      type: 'local',
-      certificate: await readFile(a.cert),
-      privateKey: await readFile(a.key),
-      algorithm: SigningAlgorithm.ES256,
-      tsaUrl: a.tsa ?? 'http://timestamp.digicert.com',
-    };
-  } else {
-    signer = await createTestSigner();
-    if (a.tsa) signer.tsaUrl = a.tsa;
+  if (a.cert && !a.key) { process.stderr.write('error: --cert requires --key\n'); return 2; }
+
+  // The CLI is a thin wrapper over the Participant SDK (src/participant.mjs), the single
+  // path any entity uses to become a signing participant.
+  const participant = await createParticipant({
+    certPath: a.cert, keyPath: a.key,
+    generator: a.generator ?? 'open-provenance/0.3',
+    tsaUrl: a.tsa ?? 'http://timestamp.digicert.com',
+  });
+  if (participant.usingTestSigner) {
     process.stderr.write('note: using the C2PA TEST signer (not on any production trust list).\n');
   }
 
-  // Build the actions assertion. The first action is the creation; --ai tags it as
-  // generative, which is exactly what verify.mjs surfaces as an AI-generated badge.
-  const created = { action: 'c2pa.created' };
-  if (a.ai) created.digitalSourceType = AI_SOURCE;
-  const actions = [created, ...a.actions.map((name) => ({ action: name }))];
-
-  const manifest = new ManifestBuilder({
-    claim_generator: a.generator ?? 'open-provenance/0.3',
-    format: mime,
-    title: basename(a.input),
-    assertions: [{ label: 'c2pa.actions', data: { actions } }],
-  });
-
-  const c2pa = createC2pa({ signer });
   try {
-    const { signedAsset } = await c2pa.sign({ asset: { buffer, mimeType: mime }, manifest });
-    await writeFile(a.out, signedAsset.buffer);
-    process.stdout.write(`signed -> ${a.out} (${signedAsset.buffer.length} bytes)` +
+    const signed = await participant.sign(buffer, {
+      mimeType: mime, title: basename(a.input), ai: a.ai, actions: a.actions,
+    });
+    await writeFile(a.out, signed);
+    process.stdout.write(`signed -> ${a.out} (${signed.length} bytes)` +
       `${a.ai ? ' [marked AI-generated]' : ''}\n`);
     return 0;
   } catch (err) {
