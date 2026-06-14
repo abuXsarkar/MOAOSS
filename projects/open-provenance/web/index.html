@@ -73,8 +73,10 @@
           <textarea id="trust-anchors" placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----" spellcheck="false"></textarea>
           <div class="trust-actions">
             <button id="trust-save" type="button">Save trust list</button>
+            <button id="trust-load-test" type="button" title="Loads the C2PA test anchor — testing only">Load test anchor</button>
             <button id="trust-clear" type="button">Clear</button>
           </div>
+          <p class="hint" style="margin:.5em 0 0">“Load test anchor” adds the <strong>C2PA test</strong> CA so you can see the Trusted ✓ state with a test-signed sample. It is <strong>not</strong> a production trust list — the test key is public. For real use, load the C2PA published list or your own roots.</p>
           <p id="trust-status"></p>
         </div>
       </div>

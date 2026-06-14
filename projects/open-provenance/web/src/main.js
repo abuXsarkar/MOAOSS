@@ -136,6 +136,7 @@ const trustEls = {
   panel: document.getElementById('trust-panel'),
   text: document.getElementById('trust-anchors'),
   save: document.getElementById('trust-save'),
+  loadTest: document.getElementById('trust-load-test'),
   clear: document.getElementById('trust-clear'),
   status: document.getElementById('trust-status'),
 };
@@ -163,6 +164,16 @@ if (trustEls.toggle) {
     localStorage.removeItem(TRUST_KEY);
     trustEls.text.value = '';
     refreshTrustStatus();
+  });
+  trustEls.loadTest.addEventListener('click', async () => {
+    try {
+      const pem = await (await fetch('./trust/c2pa-test-anchor.pem')).text();
+      trustEls.text.value = (trustEls.text.value.trim() + '\n' + pem).trim();
+      localStorage.setItem(TRUST_KEY, trustEls.text.value);
+      refreshTrustStatus();
+    } catch {
+      trustEls.status.textContent = 'Could not load the bundled test anchor.';
+    }
   });
 }
 function defList(pairs) {
