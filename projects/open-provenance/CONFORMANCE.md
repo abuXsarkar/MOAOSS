@@ -25,11 +25,14 @@ The verifier (`src/verify.mjs`, web app) runs the C2PA **reference toolkit**, so
 valid C2PA manifest regardless of the signer — Adobe, OpenAI, Google, a camera, or another
 open-provenance participant. This is architectural: we do not special-case signers.
 
-To confirm against third-party content, verify a Content-Credentials image from any public
-source (e.g. an Adobe Firefly or camera sample):
+**Evidence (in-repo):** `test/fixtures/third-party-C.jpg` is the Content Authenticity team's
+published sample (`c2patool/sample/C.jpg`), signed by `c2pa-rs` in 2022 — i.e. *not by us*.
+Our verifier reports it `VERIFIED` (signer `C2PA Test Signing Cert`, tool
+`make_test_images/0.12.0 c2pa-rs/0.12.0`). The interop test asserts this and needs no network:
 
 ```bash
-node src/verify.mjs third-party-signed.jpg --json
+node --test test/interop.test.mjs
+node src/verify.mjs test/fixtures/third-party-C.jpg --json   # or: python3 verify_any.py ...
 ```
 
 ## R3 — Credential preservation (for platforms)
