@@ -192,13 +192,18 @@ normal offline path.
 \section{Implementation}
 The verifier is implemented twice over a single shared, dependency-free verdict classifier:
 a Node.js CLI using \texttt{c2pa-node}, and a zero-backend browser application that compiles
-the C2PA toolkit to WebAssembly so verification runs client-side and offline. A signing tool
-emits manifests (optionally tagging generative content via \texttt{digitalSourceType}). The
-durable layer is implemented in Python over a DWT-DCT-SVD watermark~\cite{invisiblewatermark},
-a DCT perceptual hash~\cite{zauner2010phash}, and ORB keypoint matching with RANSAC homography
-verification for crop-robust recovery, with a registry supporting \texttt{register} and
-\texttt{recover}. The evaluation harness (\S\ref{sec:eval}) regenerates
-every quantitative claim in this report from a single command.
+the C2PA toolkit to WebAssembly so verification runs client-side and offline. A unified
+``verify any image'' front door composes the layers (C2PA verification, then durable
+recovery, then an explicit \state{unknown}), and a participant SDK plus a reference upload
+handler let any entity sign-and-register or preserve-and-register received credentials. A
+signing tool emits manifests (optionally tagging generative content via
+\texttt{digitalSourceType}). The durable layer is implemented in Python over a DWT-DCT-SVD
+watermark~\cite{invisiblewatermark}, a DCT perceptual hash~\cite{zauner2010phash}, and ORB
+keypoint matching with RANSAC homography verification for crop-robust recovery, with a
+registry supporting \texttt{register} and \texttt{recover}; the browser re-implements the
+\emph{identical} perceptual hash (verified to agree bit-for-bit), so a registry built by the
+Python tools is usable in the browser for offline recovery. The evaluation harness
+(\S\ref{sec:eval}) regenerates every quantitative claim in this report from a single command.
 
 \section{Evaluation}\label{sec:eval}
 \paragraph{Methodology.} We evaluate on the Kodak natural-image suite~\cite{kodak} ($24$ true-colour
@@ -291,7 +296,10 @@ any C2PA verifier, and our verifier reads any C2PA asset regardless of signer, b
 runs the reference toolkit. Adoption compounds only if implementations interoperate; a
 competing tag would fragment the very network effect it needs. This is the historical lesson
 of widely-adopted software substrates---value accrues to a common, re-implementable standard,
-not to private variants.
+not to private variants. As concrete evidence of the read direction, our verifier reports a
+\emph{third-party} C2PA asset---signed by the reference \texttt{c2pa-rs} tooling, not by
+us---as \state{verified} with its original signer, tool, and declared edits; the emit
+direction is exercised by a sign-then-verify conformance round-trip.
 
 \paragraph{Participation.} Becoming a participant is a single signing operation at one's
 point in the pipeline, beginning a chain of traceability there. The highest-leverage

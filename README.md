@@ -48,8 +48,9 @@ signature from a party you don't trust is shown as a warning, never an endorseme
 | --- | --- | --- |
 | **Verify any image** | `projects/open-provenance/verify_any.py` | The front door: C2PA verify → AI marker → durable recovery → honest *unknown*, one layered result. |
 | **CLI verifier** | [`projects/open-provenance`](projects/open-provenance) | Offline verdict on a file (`node src/verify.mjs <file>`). |
-| **Browser verifier** | [`projects/open-provenance/web`](projects/open-provenance/web) | Zero-backend WASM page — drop a file, verify locally, fully offline. |
+| **Browser verifier** | [`projects/open-provenance/web`](projects/open-provenance/web) | Zero-backend WASM page — drop a file, verify locally, fully offline; combined verdict/trust/AI view + offline fingerprint recovery. |
 | **Participant SDK** | `projects/open-provenance/src/participant.mjs` | The minimal path for *any* entity to sign and join the chain ([become a participant](projects/open-provenance/BECOME-A-PARTICIPANT.md)). |
+| **Reference integration** | [`examples/participant-server`](projects/open-provenance/examples/participant-server) | A copy-paste upload handler: sign-and-register, or preserve-and-register received credentials. |
 | **Signing** | `projects/open-provenance/tools/sign.mjs` | Sign an image (cert/key or test signer); optionally tag it AI-generated. |
 | **AI-generated detection** | shared classifier | Flags the IPTC `digitalSourceType` marker (Nano Banana, GPT-image, Seedance, …) when credentials are intact. |
 | **User-governed trust lists** | [`projects/open-provenance/trust`](projects/open-provenance/trust) | Validate signers against anchors *you* choose. |
