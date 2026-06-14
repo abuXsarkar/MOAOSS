@@ -48,6 +48,15 @@ offline — no network fetching is enabled.
   signer name is *as claimed*, not confirmed.
 - **Images first.** Video/audio containers are a later milestone.
 
+## Deploy (GitHub Pages)
+
+A workflow at [`.github/workflows/deploy-pages.yml`](../../../.github/workflows/deploy-pages.yml)
+builds this app and publishes it to GitHub Pages on pushes to `main` (or manually via the
+Actions tab). **One-time setup:** in the repo, go to **Settings → Pages → Source: "GitHub
+Actions"**. After that, the verifier is live at `https://<owner>.github.io/<repo>/`. The
+build uses a relative base, so it works correctly under the Pages subpath and stays fully
+offline once loaded.
+
 ## Stack
 
 [`c2pa`](https://www.npmjs.com/package/c2pa) (the CAI's WASM JS SDK) + Vite. The WASM and
