@@ -72,18 +72,22 @@ cd web && npm install && npm run dev       # offline browser verifier
 - **We cannot read proprietary watermarks** (e.g. SynthID). Once a third-party AI image is
   stripped of its C2PA metadata, the open ecosystem cannot recover its provenance. Durable
   recovery protects content that passes through *participating* signers.
-- **Durable results are on a synthetic corpus** so far (AUC = 1.0 for fingerprint recovery
-  after resize + JPEG transport); natural-image benchmarks are future work. See the paper's
-  Limitations.
+- **Durable recovery is robust to recompression and scaling but not cropping.** On the
+  Kodak natural images, fingerprint recovery is robust to resize + JPEG (AUC = 1.0) yet
+  degrades under cropping (recovery 1.0 → 0.50 as retained area falls to 70%); the
+  lightweight watermark fails by JPEG quality ≈ 50. We report this honestly rather than
+  averaging it away — see the paper.
 
 ## Reproducibility
 
 ```bash
-cd projects/open-provenance && python3 eval/durable_eval.py   # writes eval/results/*
+cd projects/open-provenance
+bash eval/fetch_corpus.sh        # Kodak natural images -> eval/corpus/
+python3 eval/natural_eval.py     # writes eval/results/* (tables, ROC, crop sweep)
 ```
 
-Every table and figure in the paper is regenerated from this harness; versions and seeds
-are pinned.
+Every table and figure in the paper is regenerated from this harness; library versions are
+pinned. (`eval/durable_eval.py` is a synthetic sanity baseline.)
 
 ## Project origin & methodology
 

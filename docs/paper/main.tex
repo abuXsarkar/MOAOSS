@@ -37,16 +37,17 @@ model that never conflates an intact provenance chain with the truth of the depi
 events, and never treats the absence of provenance as evidence of fabrication. We further
 study the central weakness of metadata-based provenance---that it is stripped by
 screenshots and social-media re-encoding---and prototype a \emph{durable} recovery layer
-combining a perceptual-fingerprint registry with robust watermarking. On a controlled
-synthetic benchmark, fingerprint-based recovery perfectly separates genuine from
-unregistered content after aggressive transport (resize to $70\%$ and JPEG quality $40$;
-ROC AUC $=1.0$; mean Hamming distance $0.33$ vs.\ $21.67$ of $64$ bits), while a
-lightweight frequency-domain watermark survives recompression only down to JPEG quality
-$\approx 70$ and fails by quality $30$, motivating learned watermarks for the embedded
-path. We are explicit about scope: the open ecosystem cannot read proprietary watermarks
-(e.g.\ SynthID), so durable recovery protects content that passes through participating
-signers, not arbitrary third-party media. All code, the evaluation harness, and this report
-are released openly.
+combining a perceptual-fingerprint registry with robust watermarking. On the Kodak
+natural-image suite, fingerprint-based recovery is robust to recompression and rescaling
+(ROC AUC $=1.0$; mean Hamming distance $0.22$ vs.\ $23.11$ of $64$ between matching and
+non-matching content under resize-to-$70\%$ + JPEG-$40$ transport), but \emph{degrades
+under cropping}---nearest-neighbour recovery falls from $1.0$ to $0.50$ as the retained
+area shrinks to $70\%$---while a lightweight frequency-domain watermark fails by JPEG
+quality $\approx 50$. These results delimit, rather than oversell, what the open layer
+achieves, and motivate crop-robust learned watermarks. We are explicit about scope: the
+open ecosystem cannot read proprietary watermarks (e.g.\ SynthID), so durable recovery
+protects content that passes through participating signers, not arbitrary third-party
+media. All code, the evaluation harness, and this report are released openly.
 \end{abstract}
 
 \section{Introduction}
@@ -188,47 +189,68 @@ and a DCT perceptual hash~\cite{zauner2010phash}, with a registry supporting
 every quantitative claim in this report from a single command.
 
 \section{Evaluation}\label{sec:eval}
-\paragraph{Methodology.} We evaluate on a controlled synthetic corpus of distinct,
-smooth images (sums of low-frequency sinusoids), which isolates transport robustness from
-content variation. We caution that synthetic content is favorable to perceptual hashing and
-somewhat adversarial to frequency-domain watermarking; evaluation on natural-image
-benchmarks is future work (\S\ref{sec:future}). All results below are produced by
-\texttt{eval/durable\_eval.py} and are fully reproducible.
+\paragraph{Methodology.} We evaluate on the Kodak natural-image suite~\cite{kodak} ($18$ true-colour
+$512\times768$ photographs with rich texture). A controlled synthetic corpus (sums of
+low-frequency sinusoids) served as a sanity baseline during development and gave conclusions
+consistent with those below for recompression and scaling; because smooth synthetic content
+is favourable to perceptual hashing, we report only the natural-image results here. Realistic
+transport includes JPEG recompression, rescaling, and---critically---\emph{center cropping},
+the geometric distortion that frequency-domain watermarks and perceptual hashes are least
+robust to. All results are produced by \texttt{eval/natural\_eval.py} and are fully
+reproducible (corpus via \texttt{eval/fetch\_corpus.sh}).
 
-\paragraph{E1: watermark robustness.} We embed a $64$-bit identifier and measure the
-bit-error rate (BER) and exact-recovery rate after JPEG recompression and rescaling
-(Table~\ref{tab:e1}). The watermark is essentially lossless down to JPEG quality $\approx
-70$ (exact recovery $\ge 0.96$), degrades at quality $50$ (BER $\approx 0.03$--$0.07$, exact
-recovery $\le 0.12$), and collapses at quality $30$ (BER $\approx 0.40$, i.e.\ near random).
-This confirms that lightweight frequency-domain watermarking is insufficient for
-social-media-grade transport and motivates learned schemes~\cite{bui2023trustmark,sander2024wam}
-for the embedded path.
+\paragraph{N1: watermark robustness.} We embed a $64$-bit identifier and measure bit-error
+rate (BER) and exact-recovery rate after JPEG recompression and rescaling
+(Table~\ref{tab:n1}). On natural images the lightweight DWT-DCT-SVD watermark is reliable
+only at high quality (exact recovery $1.0$ at $q\!=\!90$), degrades sharply by $q\!=\!70$
+(exact recovery $0.33$), and is effectively destroyed by $q\!=\!50$ (BER $\ge 0.16$). It is
+\emph{more} fragile on natural images than on smooth content, confirming that lightweight
+frequency-domain watermarking is unsuitable for social-media-grade compression and
+motivating learned schemes~\cite{bui2023trustmark,sander2024wam} for the embedded path.
 
 \begin{table}[t]
 \centering
-\caption{E1: watermark bit-error rate and exact-recovery rate vs.\ JPEG quality and
-rescale factor ($24$ images per condition).}
-\label{tab:e1}
-\input{tables/e1_watermark.tex}
+\caption{N1 (Kodak): watermark bit-error rate and exact-recovery rate vs.\ JPEG quality and
+rescale factor ($18$ images per condition).}
+\label{tab:n1}
+\input{tables/n1_watermark.tex}
 \end{table}
 
-\paragraph{E2: durable recovery.} We register $24$ images, then issue \emph{genuine} queries
-(each registered image transported by resize-to-$70\%$ plus JPEG quality $40$) and
-\emph{stranger} queries ($24$ unregistered images under the same transport). Genuine queries
-match their correct entry at mean Hamming distance $0.33/64$; strangers sit at mean distance
-$21.67/64$, a wide separation. Sweeping the decision threshold $\tau$ yields the ROC in
-Figure~\ref{fig:roc} with AUC $=1.0$; at the operating point $\tau=10$ we obtain a true
-recovery rate of $1.0$ at a false-match rate of $0.0$. Recovery thus succeeds after a
-transport that destroys the watermark (Table~\ref{tab:e1}, $q\!=\!40$ regime), validating the
-fingerprint registry as the robust primary path.
+\paragraph{N2: durable recovery under recompression and scaling.} Using a leave-one-out
+protocol, each registered image is transported (resize-to-$70\%$ + JPEG-$40$) and matched
+against the gallery; \emph{mated} distances are to the correct entry and \emph{impostor}
+distances to the nearest wrong entry. Matching content sits at mean Hamming distance
+$0.22/64$ versus $23.11/64$ for non-matching content---a wide separation yielding the ROC in
+Figure~\ref{fig:natroc} (AUC $=1.0$; equal-error rate at threshold $2$, recovery $1.0$ at
+false-match $0.0$). Recovery thus succeeds on \emph{natural} images after transport that
+destroys the watermark, establishing the fingerprint registry as the robust primary path for
+this transport class.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.5\linewidth]{figures/roc.png}
-\caption{E2: ROC for fingerprint-based recovery (genuine vs.\ stranger queries) under
-resize-$0.7$ + JPEG-$40$ transport. AUC $=1.0$ on the synthetic corpus.}
-\label{fig:roc}
+\includegraphics[width=0.5\linewidth]{figures/nat_roc.png}
+\caption{N2 (Kodak): ROC for fingerprint-based recovery (mated vs.\ impostor, leave-one-out)
+under resize-$0.7$ + JPEG-$40$ transport.}
+\label{fig:natroc}
 \end{figure}
+
+\paragraph{N3: crop sensitivity (the honest stress test).} Perceptual hashing is not
+translation- or crop-invariant, so we measure nearest-neighbour recovery as a function of the
+retained center fraction (Table~\ref{tab:n3}). Recovery is perfect when at least $90\%$ of
+the image is retained, but falls to $0.83$ at a $20\%$ crop and to $0.50$ at a $30\%$ crop, as
+the mean mated distance grows from $0.4$ to $25.6/64$. Cropping is therefore the principal
+failure mode of the fingerprint path---a limitation it shares with the DWT watermark---and
+the strongest argument for crop-robust localized watermarks~\cite{sander2024wam} and
+region/keypoint-based fingerprints in future work. We report this prominently rather than
+averaging it away.
+
+\begin{table}[t]
+\centering
+\caption{N3 (Kodak): nearest-neighbour recovery rate and mean mated Hamming distance vs.\
+retained center-crop fraction (each crop followed by JPEG-$70$).}
+\label{tab:n3}
+\input{tables/n3_crop.tex}
+\end{table}
 
 \section{Discussion}\label{sec:discussion}
 The asymmetry of provenance is its defining property: \emph{signing is opt-in, verification
@@ -242,11 +264,14 @@ through \emph{participating} signers---a meaningful but bounded guarantee, and a
 open, interoperable robust-watermarking standards.
 
 \section{Limitations and Ethics}
-Results are on a synthetic corpus and are indicative, not a natural-image benchmark. The
-fingerprint path requires prior registration and is a fuzzy match; at scale it needs
-collision handling and a registry whose governance is itself a non-gatekeeping design
-problem. Offline revocation is unhandled: a revoked-but-still-chaining certificate currently
-reads as trusted. Ethically, the system is designed against two failure modes: over-trust
+The evaluation uses $18$ natural images at modest scale; larger and adversarial benchmarks
+(diverse sources, learned-attack post-processing) remain future work. The principal
+technical limitation is geometric: recovery degrades sharply under cropping
+(Table~\ref{tab:n3}), so the present fingerprint path should not be relied on against an
+adversary who crops or warps. The fingerprint path also requires prior registration and is a
+fuzzy match; at scale it needs collision handling and a registry whose governance is itself a
+non-gatekeeping design problem. Offline revocation is unhandled: a revoked-but-still-chaining
+certificate currently reads as trusted. Ethically, the system is designed against two failure modes: over-trust
 (presenting an untrusted or merely-valid signature as endorsement) and the ``liar's
 dividend'' (treating missing provenance as proof of fakery); both are explicitly precluded by
 the verdict model. Registries of fingerprints carry privacy implications that a deployment
@@ -254,16 +279,19 @@ must address.
 
 \section{Reproducibility}
 All artifacts---verifier, signer, durable registry, and the evaluation harness that produced
-Table~\ref{tab:e1} and Figure~\ref{fig:roc}---are released under the Apache-2.0 license.
-Numbers are regenerated by \texttt{python3 eval/durable\_eval.py}; library versions and
-random seeds are pinned in the repository.
+Tables~\ref{tab:n1}--\ref{tab:n3} and Figure~\ref{fig:natroc}---are released under the
+Apache-2.0 license. The natural-image numbers are regenerated by \texttt{eval/fetch\_corpus.sh}
+followed by \texttt{python3 eval/natural\_eval.py}; library versions are pinned in the
+repository.
 
 \section{Future Work}\label{sec:future}
-Natural-image and video benchmarks; integration of a learned watermark
-(TrustMark/WAM)~\cite{bui2023trustmark,sander2024wam} for screenshot- and crop-robust
-embedded identifiers; offline revocation and trust-list distribution without a central
-authority; a decentralized, privacy-preserving recovery registry; and standardization of an
-open robust-watermark soft binding to close the third-party gap.
+Crop robustness is the priority: localized learned watermarks~\cite{sander2024wam} and
+region/keypoint-based fingerprints to withstand the cropping that defeats the present pHash
+(Table~\ref{tab:n3}). Beyond that: larger and adversarial natural-image and video benchmarks;
+integration of a learned watermark~\cite{bui2023trustmark} for compression-robust embedded
+identifiers; offline revocation and trust-list distribution without a central authority; a
+decentralized, privacy-preserving recovery registry; and standardization of an open
+robust-watermark soft binding to close the third-party gap.
 
 \bibliographystyle{plainnat}
 \bibliography{references}

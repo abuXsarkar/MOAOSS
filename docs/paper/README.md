@@ -9,8 +9,9 @@ the paper stays honest and reproducible.
 - `main.tex` — the paper.
 - `references.bib` — bibliography. **Verify each entry against its primary source before
   submission** (venues/years were filled from memory and should be confirmed).
-- `tables/e1_watermark.tex`, `figures/roc.png` — generated artifacts (do not hand-edit).
-- `refresh-results.sh` — re-run the evaluation and copy artifacts back in.
+- `tables/n1_watermark.tex`, `tables/n3_crop.tex`, `figures/nat_roc.png` — generated from
+  the natural-image (Kodak) evaluation (do not hand-edit).
+- `refresh-results.sh` — fetch the corpus, re-run the evaluation, and copy artifacts in.
 
 ## Reproduce the numbers, then build
 
@@ -55,5 +56,8 @@ reachable. A prebuilt `main.pdf` is committed for convenience.
 
 ## Status
 
-Draft. The evaluation is real but on a synthetic corpus; treat quantitative claims as
-indicative pending natural-image benchmarks.
+Draft. The evaluation runs on the Kodak natural-image suite ($18$ photographs) and reports
+an honest, differentiated result: fingerprint recovery is robust to recompression and
+scaling (AUC $=1.0$) but degrades under cropping (recovery $1.0\to0.50$ as retained area
+falls to $70\%$), and the lightweight watermark fails by JPEG quality $\approx 50$. Larger
+and adversarial benchmarks, and crop-robust methods, are the next step.

@@ -5,12 +5,16 @@ set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 PROJ="$HERE/../../projects/open-provenance"
 
-echo "running evaluation harness ..."
-( cd "$PROJ" && python3 eval/durable_eval.py )
+echo "fetching natural-image corpus (needs network) ..."
+( cd "$PROJ" && bash eval/fetch_corpus.sh ) || echo "  (corpus fetch skipped/failed; using existing eval/corpus)"
+
+echo "running natural-image evaluation harness ..."
+( cd "$PROJ" && python3 eval/natural_eval.py )
 
 echo "copying artifacts into the paper ..."
-cp "$PROJ/eval/results/e1_watermark.tex" "$HERE/tables/e1_watermark.tex"
-cp "$PROJ/eval/results/roc.png"          "$HERE/figures/roc.png"
+cp "$PROJ/eval/results/nat_e1_watermark.tex" "$HERE/tables/n1_watermark.tex"
+cp "$PROJ/eval/results/nat_e3_crop.tex"      "$HERE/tables/n3_crop.tex"
+cp "$PROJ/eval/results/nat_roc.png"          "$HERE/figures/nat_roc.png"
 
-echo "done. Review $HERE/tables and $HERE/figures, then rebuild the PDF (see README.md)."
-echo "Note: numbers in the prose (AUC, distances) should be reconciled with eval/results/summary.csv."
+echo "done. Reconcile prose numbers (abstract, Evaluation) with"
+echo "$PROJ/eval/results/nat_summary.csv, then rebuild the PDF (see README.md)."
