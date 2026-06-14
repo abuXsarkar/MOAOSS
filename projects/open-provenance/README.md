@@ -73,7 +73,9 @@ below, deliberately deferred so v0.1 is finishable.
   (see [`web/`](web/README.md))
 - **AI-generated detection** — flag the IPTC `digitalSourceType` marker (Nano Banana,
   GPT image, Seedance, etc.) in CLI and web. ✅ done
-- **v0.3** — Signing at point of capture.
+- **v0.3** — Signing (`tools/sign.mjs`): embed a signed manifest with your cert/key (or
+  the test signer), declare actions, optionally mark content AI-generated. ✅ done
+  (signing needs timestamp-authority egress; verification never does).
 - **v0.4** — User-controlled trust lists, no central authority. ✅ done in the web verifier
   (paste your own trust anchors; the toolkit validates the signer chain against them,
   offline). The CLI library (c2pa-node) exposes no trust engine, so the CLI reports trust
@@ -118,6 +120,16 @@ npm install && npm run dev      # then open the printed URL and drop in an image
 
 A zero-backend page that verifies locally with WebAssembly — nothing is uploaded. See
 [`web/README.md`](web/README.md).
+
+### Sign an image (v0.3)
+
+```bash
+node tools/sign.mjs input.jpg --out signed.jpg --generator "MyCamera/1.0"
+node tools/sign.mjs input.jpg --out ai.jpg --ai      # mark as AI-generated
+```
+
+Use `--cert <pem> --key <pem>` for your own signer (omit to use the C2PA test signer).
+Signing contacts a timestamp authority, so run it where outbound network is allowed.
 
 ### Generating a signed sample for testing
 
