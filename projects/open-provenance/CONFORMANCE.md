@@ -19,6 +19,15 @@ is VERIFIED with the participant's claim generator and AI marker preserved. (Sig
 timestamp authority; the test skips where that egress is blocked and runs on a networked
 machine.)
 
+To capture **committable** R1 evidence on a TSA-reachable host (e.g. the project VM):
+
+```bash
+bash scripts/capture-emit-evidence.sh   # signs a sample, verifies it, writes evidence/
+```
+
+This produces `evidence/emit-evidence.md` and a signed fixture that activates
+`test/emit.test.mjs` (which then proves R1 in CI without network). See [`evidence/`](evidence/).
+
 ## R2 — Read any standard C2PA
 
 The verifier (`src/verify.mjs`, web app) runs the C2PA **reference toolkit**, so it reads any
