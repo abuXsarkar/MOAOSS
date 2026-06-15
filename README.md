@@ -6,6 +6,9 @@ recovering it after it has been stripped.**
 [![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 &nbsp;Built on the open [C2PA](https://c2pa.org) standard.
 
+🔗 **Live demo:** _enable GitHub Pages to publish the offline browser verifier — see
+[`docs/GO-PUBLIC.md`](docs/GO-PUBLIC.md)._ &nbsp;|&nbsp; 📄 **Paper:** [`docs/paper/`](docs/paper/)
+
 > As the marginal cost of convincing synthetic media falls to zero, society loses its
 > shared ability to ask *"did this actually happen?"* The tractable answer is not universal
 > **detection** of fakes — which is brittle and adversarial — but verifiable

@@ -7,8 +7,9 @@ the paper stays honest and reproducible.
 ## Files
 
 - `main.tex` — the paper.
-- `references.bib` — bibliography. **Verify each entry against its primary source before
-  submission** (venues/years were filled from memory and should be confirmed).
+- `references.bib` — bibliography. The load-bearing references (Stable Signature, TrustMark,
+  WAM, SynthID/Nature, Verdoliva, LDM, the C2PA/IPTC/RFC standards) were checked against
+  primary sources; re-confirm any you add.
 - `tables/n1_watermark.tex`, `tables/n3_crop.tex`, `figures/nat_roc.png` — generated from
   the natural-image (Kodak) evaluation (do not hand-edit).
 - `refresh-results.sh` — fetch the corpus, re-run the evaluation, and copy artifacts in.
